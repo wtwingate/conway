@@ -1,0 +1,12 @@
+{
+  "name": "conway",
+  "version": "1.0.0",
+  "description": "Play(?) Conway's Game of Life in the browser!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "William Wingate",
+  "license": "ISC"
+}
