@@ -1,26 +1,28 @@
 const DELTAS = [
-  (0, 1),
-  (1, 1),
-  (1, 0),
-  (1, -1),
-  (0, -1),
-  (-1, -1),
-  (-1, 0),
-  (-1, 1),
+  [0, 1],
+  [1, 1],
+  [1, 0],
+  [1, -1],
+  [0, -1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
 ];
 
 class Grid {
-  current;
+  cells;
   prev;
+  speed;
 
   constructor(width, height) {
     this.width = width;
     this.height = height;
-    this.current = this.gridInit();
+    this.cells = this.init();
     this.prev = null;
+    this.speed = 200;
   }
 
-  gridInit() {
+  init() {
     const cells = [];
     for (let i = 0; i < this.width; i++) {
       const column = [];
@@ -33,55 +35,66 @@ class Grid {
     return cells;
   }
 
-  gridUpdate() {
-    this.prev = this.current;
+  update() {
+    this.prev = structuredClone(this.cells);
     for (let i = 0; i < this.width; i++) {
       for (let j = 0; j < this.height; j++) {
-        const cell = this.current[i][j];
-        cell.alive = this.isCellAlive(i, j);
+        const cell = this.cells[i][j];
+        const numNeighbors = this.livingNeighbors(i, j);
+        cell.update(numNeighbors);
       }
     }
   }
 
-  isCellAlive(x, y) {
-    const cell = this.current[x][y];
-    let livingNeighbors = 0;
+  livingNeighbors(x, y) {
+    const cell = this.prev[x][y];
+    let neighbors = 0;
     for (const d of DELTAS) {
-      const nx = x + d[0];
-      const ny = y + d[1];
-      if (
-        nx >= 0 &&
-        nx < this.width &&
-        ny >= 0 &&
-        ny < this.height &&
-        this.prev[nx][ny].alive === true
-      ) {
-        livingNeighbors++;
+      // check for horizontal wrap
+      let nx = x + d[0];
+      if (nx < 0) {
+        nx = this.width + nx;
+      } else if (nx >= this.width) {
+        nx = 0 + (nx - this.width);
+      }
+
+      // check for vertical wrap
+      let ny = y + d[1];
+      if (ny < 0) {
+        ny = this.width + ny;
+      } else if (ny >= this.width) {
+        ny = 0 + (ny - this.width);
+      }
+
+      if (this.prev[nx][ny].alive === true) {
+        neighbors++;
       }
     }
-    if (cell.alive === true) {
-      if (livingNeighbors < 2) {
-        // Any live cell with fewer than two live neighbors dies,
-        // as if by underpopulation.
-        return false;
-      } else if (livingNeighbors < 4) {
-        // Any live cell with two or three live neighbors lives on
-        // to the next generation.
-        return true;
-      } else {
-        // Any live cell with more than three live neighbors dies,
-        // as if by overpopulation.
-        return false;
-      }
-    } else {
-      if (livingNeighbors === 3) {
-        // Any dead cell with exactly three live neighbors becomes
-        // alive, as if by reproduction.
-        return true;
-      } else {
-        return false;
+    return neighbors;
+  }
+
+  draw() {
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+    for (let i = 0; i < this.width; i++) {
+      for (let j = 0; j < this.height; j++) {
+        const x = i * 10;
+        const y = j * 10;
+        if (this.cells[i][j].alive === true) {
+          context.fillRect(x, y, 10, 10);
+        } else {
+          context.clearRect(x, y, 10, 10);
+        }
       }
     }
+  }
+
+  loop() {
+    setTimeout(() => {
+      this.draw();
+      this.update();
+      this.loop();
+    }, this.speed);
   }
 }
 
@@ -95,4 +108,33 @@ class Cell {
     this.y = y;
     this.alive = alive;
   }
+
+  update(n) {
+    if (this.alive === true) {
+      if (n < 2) {
+        // Any live cell with fewer than two live neighbors dies,
+        // as if by underpopulation.
+        this.alive = false;
+      } else if (n < 4) {
+        // Any live cell with two or three live neighbors lives on
+        // to the next generation.
+        this.alive = true;
+      } else {
+        // Any live cell with more than three live neighbors dies,
+        // as if by overpopulation.
+        this.alive = false;
+      }
+    } else {
+      if (n === 3) {
+        // Any dead cell with exactly three live neighbors becomes
+        // alive, as if by reproduction.
+        this.alive = true;
+      } else {
+        this.alive = false;
+      }
+    }
+  }
 }
+
+const grid = new Grid(80, 80);
+grid.loop();
