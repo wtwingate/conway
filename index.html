@@ -3,26 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conway's Game of Life</title>
-    <script src="./scripts/conway.js" defer></script>
+    <title>Conway</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./conway.js" defer></script>
   </head>
   <body>
     <header>
       <h1>Conway's Game of Life</h1>
-      <nav>
-        <a href="">Home</a>
-        <a href="">About</a>
-      </nav>
     </header>
     <main>
-      <div id="options">
-        <button id="play">Play</button>
-        <button id="pause">Pause</button>
-        <button id="fast">Fast</button>
-        <button id="reset">Reset</button>
-      </div>
       <div id="board">
-        <canvas id="canvas" width="800" height="800"
+        <canvas id="canvas" width="800" height="640"
           >Conway's Game of Life</canvas
         >
       </div>

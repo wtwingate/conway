@@ -10,29 +10,26 @@ const DELTAS = [
 ];
 
 class Grid {
-  cells;
-  prev;
-  speed;
-
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
+  constructor() {
+    this.width = 80;
+    this.height = 64;
+    this.size = 10;
+    this.speed = 200;
     this.cells = this.init();
     this.prev = null;
-    this.speed = 200;
   }
 
   init() {
-    const cells = [];
+    const cellArray = [];
     for (let i = 0; i < this.width; i++) {
-      const column = [];
+      const cellColumn = [];
       for (let j = 0; j < this.height; j++) {
         const cell = new Cell(i, j, Math.random() < 0.5);
-        column.push(cell);
+        cellColumn.push(cell);
       }
-      cells.push(column);
+      cellArray.push(cellColumn);
     }
-    return cells;
+    return cellArray;
   }
 
   update() {
@@ -40,15 +37,15 @@ class Grid {
     for (let i = 0; i < this.width; i++) {
       for (let j = 0; j < this.height; j++) {
         const cell = this.cells[i][j];
-        const numNeighbors = this.livingNeighbors(i, j);
-        cell.update(numNeighbors);
+        const numAliveNeighbors = this.aliveNeighbors(i, j);
+        cell.update(numAliveNeighbors);
       }
     }
   }
 
-  livingNeighbors(x, y) {
+  aliveNeighbors(x, y) {
     const cell = this.prev[x][y];
-    let neighbors = 0;
+    let numAliveNeighbors = 0;
     for (const d of DELTAS) {
       // check for horizontal wrap
       let nx = x + d[0];
@@ -61,16 +58,16 @@ class Grid {
       // check for vertical wrap
       let ny = y + d[1];
       if (ny < 0) {
-        ny = this.width + ny;
-      } else if (ny >= this.width) {
-        ny = 0 + (ny - this.width);
+        ny = this.height + ny;
+      } else if (ny >= this.height) {
+        ny = 0 + (ny - this.height);
       }
 
       if (this.prev[nx][ny].alive === true) {
-        neighbors++;
+        numAliveNeighbors++;
       }
     }
-    return neighbors;
+    return numAliveNeighbors;
   }
 
   draw() {
@@ -78,12 +75,12 @@ class Grid {
     const context = canvas.getContext("2d");
     for (let i = 0; i < this.width; i++) {
       for (let j = 0; j < this.height; j++) {
-        const x = i * 10;
-        const y = j * 10;
+        const x = i * this.size;
+        const y = j * this.size;
         if (this.cells[i][j].alive === true) {
-          context.fillRect(x, y, 10, 10);
+          context.fillRect(x, y, this.size, this.size);
         } else {
-          context.clearRect(x, y, 10, 10);
+          context.clearRect(x, y, this.size, this.size);
         }
       }
     }
@@ -99,23 +96,19 @@ class Grid {
 }
 
 class Cell {
-  x;
-  y;
-  alive;
-
   constructor(x, y, alive) {
     this.x = x;
     this.y = y;
     this.alive = alive;
   }
 
-  update(n) {
+  update(numAliveNeighbors) {
     if (this.alive === true) {
-      if (n < 2) {
+      if (numAliveNeighbors < 2) {
         // Any live cell with fewer than two live neighbors dies,
         // as if by underpopulation.
         this.alive = false;
-      } else if (n < 4) {
+      } else if (numAliveNeighbors < 4) {
         // Any live cell with two or three live neighbors lives on
         // to the next generation.
         this.alive = true;
@@ -125,7 +118,7 @@ class Cell {
         this.alive = false;
       }
     } else {
-      if (n === 3) {
+      if (numAliveNeighbors === 3) {
         // Any dead cell with exactly three live neighbors becomes
         // alive, as if by reproduction.
         this.alive = true;
@@ -136,5 +129,5 @@ class Cell {
   }
 }
 
-const grid = new Grid(80, 80);
+const grid = new Grid();
 grid.loop();
