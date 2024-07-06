@@ -1,3 +1,3 @@
 # conway
 
-Play(?) Conway's Game of Life in the browser!
+Conway's game of life in various programming languages.
